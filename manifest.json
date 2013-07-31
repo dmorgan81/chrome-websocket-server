@@ -1,0 +1,24 @@
+{
+    "name" : "Chrome WebSocket Echo Server",
+    "description" : "WebSocket server that just echos messages",
+    "version" : "0.1",
+    "manifest_version" : 2,
+    "permissions" : [
+        {
+            "socket" : [
+                "tcp-connect",
+                "tcp-listen"
+            ]
+        }
+    ],
+    "app" : {
+        "background" : {
+            "scripts" : [
+                "lib/cryptojs-sha1-3.1.2.min.js",
+                "lib/cryptojs-enc-base64-3.1.2.min.js",
+                "src/websocket-server.js",
+                "src/background.js"
+            ]
+        }
+    }
+}
