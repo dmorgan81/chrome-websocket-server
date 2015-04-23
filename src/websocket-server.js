@@ -180,8 +180,8 @@
 
     function WebSocketConnection(o) {
         var s = String.fromCharCode.apply(null, new Uint8Array(o.data)),
-            parts = s.trim().split('\n')
-            method = parts.shift();
+            parts = s.trim().split('\n'),
+            method = parts.shift(),
             headers = {},
             that = this;
         parts.forEach(function(part) {
@@ -447,7 +447,6 @@
                     connection = new WebSocketConnection({
                         sid : acceptinfo.socketId,
                         data : readinfo.data,
-                        open : that._onConnectionOpen,
                         close : function(conn, code) {
                             var index = that._connections.indexOf(conn);
                             if (index !== -1) that._connections.splice(index, 1);
