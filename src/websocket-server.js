@@ -230,13 +230,14 @@
         }
     }
 
-    WebSocketConnection.prototype.close = function(code) {
+    WebSocketConnection.prototype.close = function(code, message) {
         var that = this, frame;
-        if (this._closed) throw new WebSocketConnectionError('close: closed');
+        if (this._closed) return;
         if (code) {
             frame = new ServerFrame(this, 0x88, 2);
             frame.payload[0] = code >>> 8;
             frame.payload[1] = code & 0xFF;
+            if (message) frame.append(message);
         } else {
             frame = new ServerFrame(this, 0x88);
         }
@@ -411,19 +412,19 @@
     }
 
     WebSocketServer.prototype.shutdown = function() {
-        if (this._sid === null) throw new WebSocketServerError('server not started');
+        if (!this.started()) throw new WebSocketServerError('server not started');
         this._connections.forEach(function(connection) {
             connection.close(1001); // going away
         });
         chrome.socket.disconnect(this._sid);
         chrome.socket.destroy(this._sid);
         this._sid = null;
-        this._onShutdown.appy(this);
+        this._onShutdown.apply(this);
     };
 
     WebSocketServer.prototype.startup = function() {
         var that = this;
-        if (this._sid !== null) throw new WebSocketServerError('server already started');
+        if (this.started()) throw new WebSocketServerError('server already started');
         chrome.socket.create('tcp', function(info) {
             that._sid = info.socketId;
             chrome.socket.listen(that._sid, '127.0.0.1', that._port, function(result) {
@@ -437,7 +438,7 @@
 
     WebSocketServer.prototype._accept = function() {
         var that = this;
-        if (this._sid === null) throw new WebSocketServerError('server not started');
+        if (!this.started()) throw new WebSocketServerError('server not started');
         chrome.socket.accept(this._sid, function(acceptinfo) {
             chrome.socket.read(acceptinfo.socketId, function(readinfo) {
                 var connection;
@@ -461,6 +462,10 @@
                 that._accept();
             });
         });
+    };
+
+    WebSocketServer.prototype.started = function() {
+        return this._sid !== null;
     };
 
     this.WebSocketServer = WebSocketServer;
